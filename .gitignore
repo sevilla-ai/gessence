@@ -1,0 +1,35 @@
+# Ada build artifacts
+*.o
+*.ali
+*.exe
+b__*
+*.bexch
+
+# GPR build directories
+obj/
+.objs/
+
+# Ada compiled binaries (keep source, not binaries)
+hello
+main_*
+
+# WebAssembly output (generated, not source)
+*.wasm
+*.js
+
+# Private infrastructure — configure locally, never commit
+# Copy world.example → world and fill in your own values
+container/world
+container/ada-dev.sh
+
+# Signal files (runtime, not source)
+.ada-signal
+
+# Editor artifacts
+.vscode/settings.json
+*.gpr.bak
+default.gpr
+
+# OS artifacts
+.DS_Store
+Thumbs.db

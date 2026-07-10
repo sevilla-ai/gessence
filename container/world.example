@@ -1,0 +1,49 @@
+#!/bin/bash
+# world.example — copy this to world and fill in your values
+# world is in .gitignore — your real IPs never get committed
+
+CONTAINER=ada-dev
+IMAGE=ada-dev
+PROJECT_DIR=/path/to/your/sandboxes/ada-wasm  # ← your real path here
+
+echo ""
+echo " [world] resolving address..."
+echo " 3 shells → 1 entry point"
+echo ""
+
+podman start "$CONTAINER" 2>/dev/null || \
+    podman run -dit --name "$CONTAINER" \
+        -v "$PROJECT_DIR":/workspace:Z "$IMAGE"
+
+podman exec -it "$CONTAINER" bash -c '
+    echo ""
+    echo "================================"
+    echo "  ADA-DEV PEBBLE               "
+    echo "  container : ada-dev          "
+    echo "  workspace : /workspace       "
+    echo "  next      : ./Hello.sh       "
+    echo "================================"
+    echo ""
+    echo " ./Hello.sh  → GEssence Sandbox Shell v0.01"
+    echo " exit        → return to host"
+    echo ""
+    exec env PS1="ADA-DEV-PEBBLE > " bash --norc
+'
+
+# check for signal from Hello.sh
+if [[ -f "$PROJECT_DIR/.ada-signal" ]]; then
+    CMD=$(cat "$PROJECT_DIR/.ada-signal")
+    rm -f "$PROJECT_DIR/.ada-signal"
+    echo ""
+    echo " [world] signal received: $CMD"
+    case "$CMD" in
+        stop)    podman stop "$CONTAINER" ;;
+        rebuild)
+            podman stop "$CONTAINER" 2>/dev/null
+            podman rm "$CONTAINER" 2>/dev/null
+            podman build -t "$IMAGE" -f "$PROJECT_DIR/Containerfile" "$PROJECT_DIR"
+            podman run -dit --name "$CONTAINER" \
+                -v "$PROJECT_DIR":/workspace:Z "$IMAGE"
+            ;;
+    esac
+fi

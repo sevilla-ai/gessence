@@ -1,0 +1,24 @@
+FROM registry.fedoraproject.org/fedora-minimal:40
+
+RUN microdnf --assumeyes install \
+    gcc-gnat \
+    gprbuild \
+    clang16 \
+    llvm16 \
+    lld \
+    libgnat \
+    git \
+    vim \
+    nano \
+    make \
+    ca-certificates && \
+    microdnf clean all
+
+# AdaWebPack: GNAT-LLVM compiler targeting WebAssembly
+RUN curl -LO https://github.com/godunko/adawebpack/releases/download/24.0.0/adawebpack-24.0.0-git.fc40.x86_64.rpm && \
+    rpm -i adawebpack-24.0.0-git.fc40.x86_64.rpm && \
+    rm -f adawebpack-24.0.0-git.fc40.x86_64.rpm && \
+    /usr/share/adawebpack/update-alternatives-clang.sh 16 99
+
+WORKDIR /workspace
+CMD ["/bin/bash"]

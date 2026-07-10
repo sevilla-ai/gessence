@@ -1,0 +1,4 @@
+project GEssence is
+   for Source_Dirs use ("src");
+   for Main use ("hello.adb");
+end GEssence;
