@@ -1,17 +1,15 @@
 # GEssence
 
 A prime address system built in Ada, targeting both x86 ASM and WebAssembly.
-Based off of webassembly website. [WebAssembly binary module section IDs]
-(https://webassembly.github.io/spec/core/binary/modules.html):
 
+The math came first. The WebAssembly spec confirmed it.
 
 ---
 
 ## What This Is
 
 GEssence maps a base address space of 1–13 onto the
-
-creating an "Is_Prime" scenario that decomposes with these 13 first. 
+[WebAssembly binary module section IDs](https://webassembly.github.io/spec/core/binary/modules.html#binary-customsec):
 
 ```
 0  → custom     (OFF, the flexible section)
@@ -34,9 +32,41 @@ creating an "Is_Prime" scenario that decomposes with these 13 first.
 ```
 3² + 2² = 9 + 4 = 13   ← sum of first two prime squares
 12 = 4 × 3              ← reverse pointer, 4/3 ratio
-13 × 2 = 26             ← full char() system (future_Prime)
-13^13 = 302875106592253 ← upperbound that can both fit in U64
+13 × 2 = 26             ← full char() system (future)
 ```
+
+---
+
+## The Token Connection
+
+This is the insight that unifies the whole project.
+
+WebAssembly and TempleOS's HolyC use the same fundamental pattern:
+
+```
+WebAssembly section:  section_id (1 byte) | length (u32) | content
+HolyC token:          token_type (int)    | length       | data
+```
+
+Different vocabulary. Identical structure. GEssence is a tokenizer that speaks both.
+
+### Section 0 = i = -1
+
+Section 0 (custom) is described in the spec as "ignored by WebAssembly semantics"
+and can appear anywhere in the binary while all other sections must be ordered.
+It floats free. That is He in the element system. That is i = -1 in the math.
+That is option 9 in the sandbox shell — the address that does not resolve cleanly.
+
+### The magic number
+
+Every `.wasm` file starts with:
+```
+0x00 0x61 0x73 0x6D = \0asm
+```
+
+`0x00` is the zero address — OFF, the origin. `asm` follows immediately.
+Zero points directly to assembly. The spec confirms the 0 → H chain
+in the first four bytes of every WebAssembly binary ever written.
 
 ---
 
@@ -44,18 +74,16 @@ creating an "Is_Prime" scenario that decomposes with these 13 first.
 
 ### Base (1–13)
 ```
-Primes  : 1, 2, 3, 5, 7, 11, 13 (one being prime is key)
+Primes  : 2, 3, 5, 7, 11, 13
 Single digit (visible)    : 2, 3, 5, 7
 Notated primes (composed) : 11 = 1+1, 13 = 1+3
 ```
 
 ### Pointer functions
-Chemical Notation to better understand why 1 being a prime is important, 1 being hydrogen, meaning a prime still exists. Also makes 1/0 = 0 instead of undefined. 
-
 ```
 Hydrogen (√)  — resolves addresses 14–169   (13×13 space)
 Oxygen   (M^M)— resolves addresses 170–13^13 (self-power space)
-Water         — routes any M back to base 1..13 (modular)
+Water         — routes any M back to base 1..13
 ```
 
 ### Self-power boundaries (Oxygen)
@@ -115,7 +143,7 @@ gessence/
 │   ├── Containerfile      ← Fedora minimal + GNAT + AdaWebPack
 │   ├── world              ← unified launcher (configure before use)
 │   ├── ada-dev.sh         ← container control script
-│   └── Hello.sh           ← GEssence sandbox menu [1-9] (script for future OS run)
+│   └── Hello.sh           ← GEssence sandbox menu [1-9]
 ├── src/
 │   ├── hello.adb          ← Ada sanity check
 │   ├── essence_resolver.ads
@@ -168,4 +196,4 @@ This project exists to learn:
 
 ---
 
-Built by sevilla.ai 
+*Built by sevilla-ai. Math first, spec second.*
