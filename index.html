@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GEssence — Ada in the Browser</title>
+</head>
+<body>
+    <h1>GEssence v0.1</h1>
+    <p>Open browser console (F12) to see Ada output.</p>
+    <script type="module">
+        const response = await fetch('/hello_wasm.wasm');
+        const bytes = await response.arrayBuffer();
+
+        const imports = {
+            env: new Proxy({}, {
+                get(target, prop) {
+                    if (prop === '__gnat_put_int') {
+                        return (n) => console.log('Ada says:', n);
+                    }
+                    return () => 0;
+                }
+            })
+        };
+
+        const { instance } = await WebAssembly.instantiate(bytes, imports);
+        window.wasmInstance = instance;
+
+        // call the Ada procedure directly
+        instance.exports._ada_hello_wasm();
+
+    </script>
+</body>
+</html>

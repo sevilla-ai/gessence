@@ -9,7 +9,7 @@ The math came first. The WebAssembly spec confirmed it.
 ## What This Is
 
 GEssence maps a base address space of 1–13 onto the
-[WebAssembly binary module section IDs](https://webassembly.github.io/spec/core/binary/modules.html#binary-customsec):
+[WebAssembly binary module section IDs](https://webassembly.github.io/spec/core/binary/modules.html):
 
 ```
 0  → custom     (OFF, the flexible section)
