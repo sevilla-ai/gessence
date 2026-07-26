@@ -1,20 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GEssence — Ada in the Browser</title>
+    <title>GEssence Calculator</title>
+    <style>
+        body { background: #0a0a0a; color: #f5edd8; font-family: Georgia, serif; 
+               display: flex; flex-direction: column; align-items: center; 
+               padding: 40px; }
+        h1 { color: #d4a843; letter-spacing: 0.2em; }
+        input { background: #1a1a1a; border: 1px solid #d4a843; color: #f5edd8;
+                font-size: 24px; padding: 10px; width: 200px; text-align: center; }
+        button { background: #cc0000; color: #f5edd8; border: none; 
+                 font-size: 18px; padding: 10px 30px; cursor: pointer; margin-top: 10px; }
+        #result { margin-top: 20px; font-size: 20px; color: #5ba8c4; }
+        #prime  { margin-top: 10px; font-size: 16px; color: #d4a843; }
+    </style>
 </head>
 <body>
-    <h1>GEssence v0.1</h1>
-    <p>Open browser console (F12) to see Ada output.</p>
+    <h1>GEssence</h1>
+    <p>Enter any number — resolve it to base address 1–13</p>
+    <input type="number" id="numInput" value="42" min="1" />
+    <button onclick="resolve()">Resolve</button>
+    <div id="result"></div>
+    <div id="prime"></div>
+
     <script type="module">
-        const response = await fetch('/hello_wasm.wasm');
+        const response = await fetch('/gessence.wasm');
         const bytes = await response.arrayBuffer();
 
         const imports = {
             env: new Proxy({}, {
                 get(target, prop) {
                     if (prop === '__gnat_put_int') {
-                        return (n) => console.log('Ada says:', n);
+                        return (n) => {
+                            window.lastResult = n;
+                        };
                     }
                     return () => 0;
                 }
@@ -23,10 +42,24 @@
 
         const { instance } = await WebAssembly.instantiate(bytes, imports);
         window.wasmInstance = instance;
+        console.log('GEssence loaded');
 
-        // call the Ada procedure directly
-        instance.exports._ada_hello_wasm();
+        window.resolve = function() {
+            const M = parseInt(document.getElementById('numInput').value);
 
+            window.lastResult = null;
+            instance.exports.water(M);
+            const address = window.lastResult;
+
+            window.lastResult = null;
+            instance.exports.is_prime(address);
+            const prime = window.lastResult;
+
+            document.getElementById('result').textContent =
+                M + ' → address ' + address;
+            document.getElementById('prime').textContent =
+                prime === 1 ? '✓ prime address' : '○ composite address';
+        };
     </script>
 </body>
 </html>
