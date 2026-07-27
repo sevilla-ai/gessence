@@ -1,8 +1,10 @@
 GPRBUILD ?= gprbuild
 GPRCLEAN ?= gprclean
+GNATMAKE ?= gnatmake
 ASM_DIR  ?= asm
+NATIVE_OBJ ?= obj-native
 
-.PHONY: all build test style asm clean
+.PHONY: all build test native-test style asm clean
 
 all: build test
 
@@ -13,6 +15,15 @@ build:
 test: build
 	$(GPRBUILD) -P tests.gpr
 	./test_essence_resolver
+
+# Readable console table of the resolver math. One gnatmake invocation over
+# src/ and tests/, so it needs nothing but GNAT — no gpr, container or wasm
+# toolchain.
+native-test:
+	mkdir -p $(NATIVE_OBJ)
+	$(GNATMAKE) -D $(NATIVE_OBJ) -Isrc -Itests \
+	    -o main_essence_test tests/main_essence_test.adb -cargs -gnat2022
+	./main_essence_test
 
 # Style checks are compiler switches (see gessence.gpr), so a warning-free
 # build from scratch is the style gate.
@@ -30,5 +41,5 @@ asm:
 clean:
 	-$(GPRCLEAN) -q -P tests.gpr
 	-$(GPRCLEAN) -q -P gessence.gpr
-	rm -rf $(ASM_DIR) obj obj-tests obj-wasm
-	rm -f hello test_essence_resolver
+	rm -rf $(ASM_DIR) obj obj-tests $(NATIVE_OBJ) obj-wasm
+	rm -f hello test_essence_resolver main_essence_test

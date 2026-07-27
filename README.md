@@ -163,7 +163,8 @@ gessence/
 │   ├── gessence_exports.adb
 │   └── hello_wasm.adb
 ├── tests/
-│   └── test_essence_resolver.adb
+│   ├── test_essence_resolver.adb  ← self-checking suite (make test)
+│   └── main_essence_test.adb      ← console table (make native-test)
 └── docs/
     └── GEssence_Master_Pointer.md
 ```
@@ -194,12 +195,20 @@ gprbuild -P gessence.gpr      # or: make build
 ### Build, test, style
 
 ```bash
-make build   # native build (hello + essence_resolver)
-make test    # build and run the resolver test harness
-make style   # rebuild with GNAT style checks as errors (-gnaty..., -gnatwe)
-make asm     # dump GNAT's x86-64 assembly into asm/
+make build        # native build (hello + essence_resolver)
+make test         # build and run the resolver test harness
+make native-test  # print a readable table of the resolver math
+make style        # rebuild with GNAT style checks as errors (-gnaty..., -gnatwe)
+make asm          # dump GNAT's x86-64 assembly into asm/
 make clean
 ```
+
+`make native-test` is the fastest way to eyeball the resolver: one `gnatmake`
+over `src/` and `tests/`, then it runs. It needs nothing but GNAT — no gpr
+file, no container, no QEMU, no wasm toolchain. It prints `Is_Prime`, `Water`,
+`Mod_Six` and `Rem_Six` for M = 1 .. 13, then the same for the origin, the
+negatives and both ends of the 13**13 range. It asserts nothing; the pass/fail
+expectations live in `make test`.
 
 Style rules are compiler switches, listed in `gessence.gpr`. A clean `make
 style` is the gate; there is no separate linter.
@@ -223,6 +232,7 @@ exports `index.html` calls.
 *   \[ \] hello.adb → .wasm (Ada running in browser)
 *   \[x\] QEMU + TempleOS in container
 *   \[ \] HolyC Is\_Prime — compare ASM to Ada Is\_Prime
+*   \[x\] main\_essence\_test.adb — native console table of the resolver math
 *   \[ \] Coordinate decomposition package
 *   \[ \] Scale to 26 (air mirror of water, full char() system)
 

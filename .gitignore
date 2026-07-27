@@ -8,12 +8,14 @@ b__*
 # GPR build directories
 obj/
 obj-tests/
+obj-native/
 obj-wasm/
 .objs/
 
 # Ada compiled binaries (keep source, not binaries)
+# Root anchored, so tests/main_essence_test.adb stays tracked.
 /hello
-main_*
+/main_*
 /test_essence_resolver
 
 # Generated x86 assembly listings (make asm)

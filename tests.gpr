@@ -1,4 +1,5 @@
---  Test harness for the native build.
+--  Test harness for the native build. Two mains: the self-checking suite and
+--  the human-readable console walk-through.
 
 with "gessence.gpr";
 
@@ -7,7 +8,7 @@ project Tests is
    for Source_Dirs use ("tests");
    for Object_Dir use "obj-tests";
    for Exec_Dir use ".";
-   for Main use ("test_essence_resolver.adb");
+   for Main use ("test_essence_resolver.adb", "main_essence_test.adb");
 
    package Compiler renames GEssence.Compiler;
 
