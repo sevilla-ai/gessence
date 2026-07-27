@@ -46,7 +46,7 @@ begin
    for M in ER.Base_Address loop
       Check ("Is_Prime" & M'Image,
              ER.Is_Prime (M),
-             M in 2 | 3 | 5 | 7 | 11 | 13);
+             M in 1 | 2 | 3 | 5 | 7 | 11 | 13);
    end loop;
 
    Put_Line ("Hydrogen (floor sqrt over the 13 x 13 matrix)");

@@ -73,8 +73,9 @@ Every `.wasm` file starts with:
 ### Base (1–13)
 
 ```
-Primes  : 2, 3, 5, 7, 11, 13
-Single digit (visible)    : 2, 3, 5, 7
+Primes  : 1, 2, 3, 5, 7, 11, 13   (seven — Unity is a direct prime here)
+Composites                : 4, 6, 8, 9, 10, 12   (six)
+Single digit (visible)    : 1, 2, 3, 5, 7
 Notated primes (composed) : 11 = 1+1, 13 = 1+3
 ```
 

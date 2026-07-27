@@ -14,6 +14,9 @@ package Essence_Resolver is
    --  Square space: the 13 x 13 matrix.
    subtype Square_M is Integer range 1 .. 169;
 
+   --  Seven direct primes in the base: 1, 2, 3, 5, 7, 11, 13.
+   --  Unity counts as prime in this system; the six composites are
+   --  4, 6, 8, 9, 10, 12.
    function Is_Prime (M : Base_Address) return Boolean;
 
    --  Square-root pointer, for the 13 x 13 matrix.

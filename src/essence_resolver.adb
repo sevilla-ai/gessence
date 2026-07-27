@@ -2,11 +2,14 @@
 
 package body Essence_Resolver is
 
+   --  Unity is a direct prime here: 1 is reachable only from itself, so it
+   --  belongs with the addresses that have no factor pointer. This is a
+   --  deliberate departure from the number-theory convention.
    function Is_Prime (M : Base_Address) return Boolean is
    begin
       case M is
-         when 2 | 3 | 5 | 7 | 11 | 13 => return True;
-         when others                  => return False;
+         when 1 | 2 | 3 | 5 | 7 | 11 | 13 => return True;
+         when others                      => return False;
       end case;
    end Is_Prime;
 
