@@ -86,6 +86,12 @@ Oxygen   (M^M)— resolves addresses 170–13^13 (self-power space)
 Water         — routes any M back to base 1..13
 ```
 
+`Base_Address` is 1..13, so the origin has no address of its own: `Water (0)`
+grounds out at Unity (1), the same value Hydrogen and Oxygen return at the low
+end of their own ranges. `Water` is signed — the air side (negative M) resolves
+through `abs M`, and the sign is carried by the weight (`rem`), never by the
+address (`mod`).
+
 ### Self-power boundaries (Oxygen)
 
 ```
@@ -138,19 +144,33 @@ Built and tested in a Podman container on Debian 13.
 gessence/
 ├── README.md
 ├── .gitignore
-├── gessence.gpr           ← Ada project file
+├── Makefile               ← build / test / style / asm
+├── gessence.gpr           ← native (x86-64) project
+├── gessence_wasm.gpr      ← WebAssembly project
+├── tests.gpr              ← test harness project
 ├── container/
 │   ├── Containerfile      ← Fedora minimal + GNAT + AdaWebPack
 │   ├── world              ← unified launcher (configure before use)
 │   ├── ada-dev.sh         ← container control script
 │   └── Hello.sh           ← GEssence sandbox menu [1-9]
-├── src/
+├── src/                   ← portable Ada, builds on every target
 │   ├── hello.adb          ← Ada sanity check
 │   ├── essence_resolver.ads
 │   └── essence_resolver.adb
+├── wasm/                  ← browser-only, needs AdaWebPack
+│   ├── gessence_wasm.adb  ← wasm main, exports water / is_prime
+│   ├── gessence_exports.ads
+│   ├── gessence_exports.adb
+│   └── hello_wasm.adb
+├── tests/
+│   └── test_essence_resolver.adb
 └── docs/
     └── GEssence_Master_Pointer.md
 ```
+
+`src/` and `wasm/` are separate source directories on purpose. The wasm units
+`with WASM.Console`, which only exists under AdaWebPack; keeping them in `src/`
+made the native build fail with `file "wasm.ads" not found`.
 
 ---
 
@@ -168,8 +188,31 @@ podman build -t ada-dev -f container/Containerfile .
 ./hello
 
 # 4. build the Ada packages
-gprbuild -P gessence.gpr
+gprbuild -P gessence.gpr      # or: make build
 ```
+
+### Build, test, style
+
+```bash
+make build   # native build (hello + essence_resolver)
+make test    # build and run the resolver test harness
+make style   # rebuild with GNAT style checks as errors (-gnaty..., -gnatwe)
+make asm     # dump GNAT's x86-64 assembly into asm/
+make clean
+```
+
+Style rules are compiler switches, listed in `gessence.gpr`. A clean `make
+style` is the gate; there is no separate linter.
+
+The WebAssembly module is built separately, and needs AdaWebPack plus
+GNAT-LLVM:
+
+```bash
+gprbuild -P gessence_wasm.gpr
+```
+
+`gessence_wasm.adb` is the main that produces the `water` and `is_prime`
+exports `index.html` calls.
 
 ---
 

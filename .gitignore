@@ -7,11 +7,17 @@ b__*
 
 # GPR build directories
 obj/
+obj-tests/
+obj-wasm/
 .objs/
 
 # Ada compiled binaries (keep source, not binaries)
-hello
+/hello
 main_*
+/test_essence_resolver
+
+# Generated x86 assembly listings (make asm)
+asm/
 
 # WebAssembly output (generated, not source)
 *.wasm

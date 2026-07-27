@@ -18,8 +18,8 @@
 <body>
     <h1>GEssence</h1>
     <p>Enter any number — resolve it to base address 1–13</p>
-    <input type="number" id="numInput" value="42" min="1" />
-    <button onclick="resolve()">Resolve</button>
+    <input type="number" id="numInput" value="42" />
+    <button id="resolveBtn" disabled>Loading…</button>
     <div id="result"></div>
     <div id="prime"></div>
 
@@ -44,8 +44,13 @@
         window.wasmInstance = instance;
         console.log('GEssence loaded');
 
-        window.resolve = function() {
-            const M = parseInt(document.getElementById('numInput').value);
+        function resolve() {
+            const M = parseInt(document.getElementById('numInput').value, 10);
+            if (!Number.isFinite(M)) {
+                document.getElementById('result').textContent = 'enter a number';
+                document.getElementById('prime').textContent = '';
+                return;
+            }
 
             window.lastResult = null;
             instance.exports.water(M);
@@ -59,7 +64,12 @@
                 M + ' → address ' + address;
             document.getElementById('prime').textContent =
                 prime === 1 ? '✓ prime address' : '○ composite address';
-        };
+        }
+
+        const button = document.getElementById('resolveBtn');
+        button.addEventListener('click', resolve);
+        button.textContent = 'Resolve';
+        button.disabled = false;
     </script>
 </body>
 </html>
