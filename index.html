@@ -3,36 +3,68 @@
 <head>
     <title>GEssence Calculator</title>
     <style>
-        body { background: #0a0a0a; color: #f5edd8; font-family: Georgia, serif; 
-               display: flex; flex-direction: column; align-items: center; 
+        body { background: #0a0a0a; color: #f5edd8; font-family: Georgia, serif;
+               display: flex; flex-direction: column; align-items: center;
                padding: 40px; }
         h1 { color: #d4a843; letter-spacing: 0.2em; }
+        h2 { color: #d4a843; font-size: 16px; letter-spacing: 0.1em;
+             margin-top: 40px; }
         input { background: #1a1a1a; border: 1px solid #d4a843; color: #f5edd8;
-                font-size: 24px; padding: 10px; width: 200px; text-align: center; }
-        button { background: #cc0000; color: #f5edd8; border: none; 
-                 font-size: 18px; padding: 10px 30px; cursor: pointer; margin-top: 10px; }
+                font-size: 20px; padding: 8px; width: 140px; text-align: center;
+                margin: 4px; }
+        button { background: #cc0000; color: #f5edd8; border: none;
+                 font-size: 16px; padding: 8px 20px; cursor: pointer;
+                 margin: 4px; }
+        button:disabled { background: #444; cursor: default; }
+        .row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+        .ops { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+               justify-content: center; }
         #result { margin-top: 20px; font-size: 20px; color: #5ba8c4; }
         #prime  { margin-top: 10px; font-size: 16px; color: #d4a843; }
+        #mathResult { margin-top: 20px; font-size: 20px; color: #5ba8c4;
+                      min-height: 28px; }
     </style>
 </head>
 <body>
     <h1>GEssence</h1>
     <p>Enter any number — resolve it to base address 1–13</p>
-    <input type="number" id="numInput" value="42" min="1" />
-    <button onclick="resolve()">Resolve</button>
+    <input type="number" id="numInput" value="42" />
+    <button id="resolveBtn" disabled>Loading…</button>
     <div id="result"></div>
     <div id="prime"></div>
+
+    <h2>Arithmetic</h2>
+    <div class="row">
+        <input type="number" id="aInput" value="10" />
+        <input type="number" id="bInput" value="10" />
+    </div>
+    <div class="ops">
+        <button id="addBtn" disabled>Add</button>
+        <button id="subBtn" disabled>Subtract</button>
+        <button id="mulBtn" disabled>Multiply</button>
+        <button id="divBtn" disabled>Divide</button>
+        <button id="powBtn" disabled>A^B</button>
+        <button id="selfPowBtn" disabled>A^A</button>
+        <button id="sqBtn" disabled>Square (A²)</button>
+        <button id="cubeBtn" disabled>Cube (B³)</button>
+        <button id="pyBtn" disabled>Pythagorean</button>
+    </div>
+    <div id="mathResult"></div>
 
     <script type="module">
         const response = await fetch('/gessence.wasm');
         const bytes = await response.arrayBuffer();
+
+        // Buffer instead of a single overwritten variable, since the
+        // arithmetic exports log multiple words per call (high, low, addr).
+        window.resultBuffer = [];
 
         const imports = {
             env: new Proxy({}, {
                 get(target, prop) {
                     if (prop === '__gnat_put_int') {
                         return (n) => {
-                            window.lastResult = n;
+                            window.resultBuffer.push(n);
                         };
                     }
                     return () => 0;
@@ -44,22 +76,90 @@
         window.wasmInstance = instance;
         console.log('GEssence loaded');
 
-        window.resolve = function() {
-            const M = parseInt(document.getElementById('numInput').value);
+        function callLogged(exportName, ...args) {
+            window.resultBuffer = [];
+            instance.exports[exportName](...args);
+            return window.resultBuffer;
+        }
 
-            window.lastResult = null;
-            instance.exports.water(M);
-            const address = window.lastResult;
+        // Reconstructs a full signed 64-bit value from its raw high/low
+        // 32-bit halves (as logged by Log_Wide on the Ada side).
+        function reconstruct64(high, low) {
+            const hi = BigInt.asIntN(32, BigInt(high));
+            const lo = BigInt.asUintN(32, BigInt(low));
+            return (hi << 32n) + lo;
+        }
 
-            window.lastResult = null;
-            instance.exports.is_prime(address);
-            const prime = window.lastResult;
+        function resolve() {
+            const M = parseInt(document.getElementById('numInput').value, 10);
+            if (!Number.isFinite(M)) {
+                document.getElementById('result').textContent = 'enter a number';
+                document.getElementById('prime').textContent = '';
+                return;
+            }
+
+            const [address] = callLogged('water', M);
+            const [prime] = callLogged('is_prime', address);
 
             document.getElementById('result').textContent =
                 M + ' → address ' + address;
             document.getElementById('prime').textContent =
                 prime === 1 ? '✓ prime address' : '○ composite address';
-        };
+        }
+
+        function getAB() {
+            const a = parseInt(document.getElementById('aInput').value, 10);
+            const b = parseInt(document.getElementById('bInput').value, 10);
+            return [a, b];
+        }
+
+        // Every arithmetic export now logs exactly 3 words: high, low, addr.
+        function showMathResult(label, buffer) {
+            const [high, low, address] = buffer;
+            const rawResult = reconstruct64(high, low);
+            document.getElementById('mathResult').textContent =
+                label + ' = ' + rawResult.toString() + '  →  address ' + address;
+        }
+
+        function wireOp(buttonId, exportName, label, argsFn) {
+            document.getElementById(buttonId).addEventListener('click', () => {
+                const args = argsFn();
+                const out = callLogged(exportName, ...args);
+                showMathResult(label, out);
+            });
+        }
+
+        wireOp('addBtn', 'gessence_add', 'A + B', () => getAB());
+        wireOp('subBtn', 'gessence_subtract', 'A - B', () => getAB());
+        wireOp('mulBtn', 'gessence_multiply', 'A * B', () => getAB());
+        wireOp('divBtn', 'gessence_divide', 'A / B', () => getAB());
+        wireOp('powBtn', 'gessence_power', 'A ^ B', () => getAB());
+        wireOp('selfPowBtn', 'gessence_self_power', 'A ^ A', () => [getAB()[0]]);
+        wireOp('sqBtn', 'gessence_power', 'A²', () => [getAB()[0], 2]);
+        wireOp('cubeBtn', 'gessence_power', 'B³', () => [getAB()[1], 3]);
+
+        // Pythagorean logs 4 words now (high, low, addr, exactFlag) instead
+        // of the standard 3, so it gets its own handler instead of wireOp.
+        document.getElementById('pyBtn').addEventListener('click', () => {
+            const [a, b] = getAB();
+            const [high, low, address, exactFlag] = callLogged('gessence_pythagorean', a, b);
+            const c2 = reconstruct64(high, low);
+            const label = exactFlag === 1
+                ? 'c = ' + address + ' (exact)'
+                : 'c ≈ ' + address + ' (√' + c2.toString() + ' is irrational, rounded down)';
+            document.getElementById('mathResult').textContent =
+                'A² + B² = ' + c2.toString() + '  →  ' + label;
+        });
+
+        const button = document.getElementById('resolveBtn');
+        button.addEventListener('click', resolve);
+        button.textContent = 'Resolve';
+        button.disabled = false;
+
+        for (const id of ['addBtn', 'subBtn', 'mulBtn', 'divBtn', 'powBtn',
+                           'selfPowBtn', 'sqBtn', 'cubeBtn', 'pyBtn']) {
+            document.getElementById(id).disabled = false;
+        }
     </script>
 </body>
 </html>
