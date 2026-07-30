@@ -1,23 +1,23 @@
-# Credits
+# CREDITS
 
-## WebAssembly
-Modules and Index
-https://webassembly.github.io/spec/core/binary/modules.html
+## Toolchains
 
-## AdaWebPack
-Ada to WebAssembly runtime and browser bindings.
-https://github.com/godunko/adawebpack
+- **GNAT Ada toolchain**  
+  Used to compile the Ada source and manage the `gessence.gpr` project for native and WebAssembly targets.
 
-## GNAT-LLVM
-Ada frontend for LLVM, enabling WebAssembly compilation.
-https://github.com/AdaCore/gnat-llvm
+- **WebAssembly toolchain (e.g., Emscripten)**  
+  Used or planned for compiling the core resolver into `.wasm` artifacts for browser execution.
 
-## GNAT
-GNU Ada compiler toolchain.
-https://gcc.gnu.org/
+## Acknowledgements
 
-## TempleOS
-Inspiration for HolyC/ASM comparison work.
-Created by Terry A. Davis (1969-2018)
-Public Domain
-https://templeos.org
+- Thanks to the Ada and WebAssembly open-source communities for providing the compilers, documentation, and tooling that make this project possible.
+
+## Future References
+
+- **HolyC-wasm** — HolyC to WebAssembly compiler and browser runtime, useful as a future reference or fork candidate for TempleOS-web and HolyC/WASM experimentation.
+  https://github.com/ParkerrDev/HolyC-wasm
+
+## Licensing Note
+
+All third-party tools and libraries remain under their respective licenses.  
+Gessence uses these tools but does not modify their original licensing terms.
