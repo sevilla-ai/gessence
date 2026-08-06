@@ -37,7 +37,7 @@ package body GEssence_Exports is
 
    procedure Wasm_Is_Prime (M : Interfaces.Integer_32) is
    begin
-      if M in 1 .. 13 then
+      if M in 1 .. 14 then
          if Essence_Resolver.Is_Prime
            (Essence_Resolver.Base_Address (M))
          then
@@ -80,7 +80,7 @@ package body GEssence_Exports is
    begin
       Log_Wide (Result);
       if abs Result > Essence_Resolver.Ceiling then
-         WASM.Console.Log (Interfaces.Integer_32 (13));  --  ceiling-clamped
+         WASM.Console.Log (Interfaces.Integer_32 (14));  --  ceiling-clamped
       else
          Addr := Essence_Resolver.Water (Result);
          WASM.Console.Log (Interfaces.Integer_32 (Addr));
@@ -123,7 +123,7 @@ package body GEssence_Exports is
 
          Log_Wide (Result);
          if abs Result > Essence_Resolver.Ceiling then
-            WASM.Console.Log (Interfaces.Integer_32 (13));  --  ceiling-clamped
+            WASM.Console.Log (Interfaces.Integer_32 (14));  --  ceiling-clamped
          else
             Addr := Essence_Resolver.Water (Result);
             WASM.Console.Log (Interfaces.Integer_32 (Addr));
@@ -148,7 +148,7 @@ package body GEssence_Exports is
 
          Log_Wide (Result);
          if abs Result > Essence_Resolver.Ceiling then
-            WASM.Console.Log (Interfaces.Integer_32 (13));  --  ceiling-clamped
+            WASM.Console.Log (Interfaces.Integer_32 (14));  --  ceiling-clamped
          else
             Addr := Essence_Resolver.Water (Result);
             WASM.Console.Log (Interfaces.Integer_32 (Addr));
@@ -170,10 +170,10 @@ package body GEssence_Exports is
 
       if C2 = 0 then
          Addr := 1;  --  grounds at Unity, same rule Water uses for M = 0
-      elsif C2 <= 169 then
+      elsif C2 <= 196 then
          Addr := Essence_Resolver.Hydrogen (Essence_Resolver.Square_M (C2));
       else
-         Addr := 13;  --  clamped: past our sqrt-domain ceiling (13 = sqrt(169))
+         Addr := 14;  --  clamped: past our sqrt-domain ceiling (14 = sqrt(196))
       end if;
 
       Exact := Long_Long_Integer (Addr) * Long_Long_Integer (Addr) = C2;

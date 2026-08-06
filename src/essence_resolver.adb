@@ -14,10 +14,12 @@ package body Essence_Resolver is
    end Is_Prime;
 
    --  Hydrogen: sqrt (M) -> nearest base address.
-   --  Boundaries are the perfect squares 1, 4, 9, 16 ... 169.
+   --  Boundaries are the perfect squares 1, 4, 9, 16 ... 196.
    function Hydrogen (M : Square_M) return Base_Address is
    begin
-      if M = 169 then
+      if M = 196 then
+         return 14;
+      elsif M >= 169 then
          return 13;
       elsif M >= 144 then
          return 12;
@@ -47,11 +49,13 @@ package body Essence_Resolver is
    end Hydrogen;
 
    --  Oxygen: M**M -> nearest base address.
-   --  Boundaries are the self-powers 1**1, 2**2, 3**3 ... 13**13.
+   --  Boundaries are the self-powers 1**1, 2**2, 3**3 ... 14**14.
    function Oxygen (M : Large_M) return Base_Address is
       Abs_M : constant Large_M := abs M;
    begin
       if Abs_M = Ceiling then
+         return 14;
+      elsif Abs_M >= 302_875_106_592_253 then
          return 13;
       elsif Abs_M >= 8_916_100_448_256 then
          return 12;
@@ -94,13 +98,37 @@ package body Essence_Resolver is
       case M is
          when 1 | 2 | 3 =>
             return 1;
-         when 5 | 7 | 11 | 13 =>
+         when 5 | 7 =>
             return 2;
+         when 11 | 13 =>
+            return 3;
          when others =>
             return 0;
       end case;
    end Helium;
 
+   --  Gas: composite band, the mirror of Helium.
+   --  Composites 4, 6, 8   fold to band 1.
+   --  Composites 9, 10     fold to band 2.
+   --  Composites 12, 14    fold to band 3.
+   --  Prime inputs are not useful in this layer and return 0.
+   function Gas (M : Base_Address) return Natural is
+   begin
+      if Is_Prime (M) then
+         return 0;
+      end if;
+ 
+      case M is
+         when 4 | 6 | 8 =>
+            return 1;
+         when 9 | 10 =>
+            return 2;
+         when 12 | 14 =>
+            return 3;
+         when others =>
+            return 0;
+      end case;
+   end Gas;
    --  Water: routes any M back to base 1 .. 13.
    --  Negative M uses its absolute value for the address lookup; the sign is
    --  carried by the weight (rem), never by the address (mod).
@@ -111,9 +139,9 @@ package body Essence_Resolver is
    begin
       if Abs_M = 0 then
          return 1;
-      elsif Abs_M <= 13 then
+      elsif Abs_M <= 14 then
          return Base_Address (Abs_M);
-      elsif Abs_M <= 169 then
+      elsif Abs_M <= 196 then
          return Hydrogen (Square_M (Abs_M));
       else
          return Oxygen (Abs_M);
