@@ -13,6 +13,20 @@ package body Essence_Resolver is
       end case;
    end Is_Prime;
 
+   --  Direct/prime-like addresses take precedence in GEv2, including Unity.
+   --  The remaining perfect squares resolve to Square_Atom; all remaining
+   --  non-prime values resolve to Composite_Atom.
+   function Resolve_Atom (M : Base_Address) return Atom_Kind is
+   begin
+      if Is_Prime (M) then
+         return Prime_Atom;
+      elsif M = 4 or else M = 9 then
+         return Square_Atom;
+      else
+         return Composite_Atom;
+      end if;
+   end Resolve_Atom;
+
    --  Hydrogen: sqrt (M) -> nearest base address.
    --  Boundaries are the perfect squares 1, 4, 9, 16 ... 196.
    function Hydrogen (M : Square_M) return Base_Address is
@@ -66,7 +80,6 @@ package body Essence_Resolver is
       elsif Abs_M >= 387_420_489 then
          return 9;
       elsif Abs_M >= 16_777_216 then
-         --  Perfect Elephant pointer (Terry Davis).
          return 8;
       elsif Abs_M >= 823_543 then
          return 7;
@@ -85,10 +98,9 @@ package body Essence_Resolver is
       end if;
    end Oxygen;
 
-      --  Helium: irrational prime-root band.
-   --  Prime roots 1, 2, 3 fold to band 1.
-   --  Prime roots 5, 7, 11, 13 fold to band 2.
-   --  Non-prime inputs are not useful in this layer and return 0.
+   --  Helium: direct/prime root-component band.
+   --  Unity (1), 2, 3 fold to band 1; 5 and 7 fold to band 2;
+   --  11 and 13 fold to band 3.
    function Helium (M : Base_Address) return Natural is
    begin
       if not Is_Prime (M) then
@@ -108,16 +120,12 @@ package body Essence_Resolver is
    end Helium;
 
    --  Gas: composite band, the mirror of Helium.
-   --  Composites 4, 6, 8   fold to band 1.
-   --  Composites 9, 10     fold to band 2.
-   --  Composites 12, 14    fold to band 3.
-   --  Prime inputs are not useful in this layer and return 0.
    function Gas (M : Base_Address) return Natural is
    begin
       if Is_Prime (M) then
          return 0;
       end if;
- 
+
       case M is
          when 4 | 6 | 8 =>
             return 1;
@@ -129,11 +137,8 @@ package body Essence_Resolver is
             return 0;
       end case;
    end Gas;
-   --  Water: routes any M back to base 1 .. 13.
-   --  Negative M uses its absolute value for the address lookup; the sign is
-   --  carried by the weight (rem), never by the address (mod).
-   --  The origin has no address of its own, so 0 grounds out at Unity, which
-   --  is what Hydrogen and Oxygen already do for the low end of their ranges.
+
+   --  Water: routes any M back to base 1 .. 14.
    function Water (M : Large_M) return Base_Address is
       Abs_M : constant Large_M := abs M;
    begin
@@ -148,30 +153,21 @@ package body Essence_Resolver is
       end if;
    end Water;
 
-      --  I_Cycle: signed fold counter in the ±2^3 band (rem 8),
-      --  preserving the air/water side.
    function I_Cycle (Power : Integer) return Integer is
    begin
       return Power rem 8;
    end I_Cycle;
 
-   --  Mod_Six: examines behavior around the first prime product (2×3 = 6).
-   --  Multiples of 6 collapse to origin, nearby values reveal composite vs prime.
    function Mod_Six (M : Integer) return Natural is
    begin
       return M mod 6;
    end Mod_Six;
 
-   --  Rem_Six: weight calculation, signed, preserves the air/water side.
-   --  -12 rem 6 = 0  -> air side reverse pointer still collapses.
-   --  -13 rem 6 = -1 -> air side prime, negative H.
    function Rem_Six (M : Integer) return Integer is
    begin
       return M rem 6;
    end Rem_Six;
 
-   --  Hydrogen_Resolve: ground state. Any M rem 1 = 0, so every address is
-   --  fully consumed and returned to the origin, on either side.
    function Hydrogen_Resolve (M : Integer) return Integer is
    begin
       return M rem 1;

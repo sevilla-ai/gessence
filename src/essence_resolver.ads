@@ -1,5 +1,5 @@
 --  essence_resolver.ads
---  Prime address system: resolves any M back to base address 1 .. 13.
+--  Prime address system: resolves any M back to base address 1 .. 14.
 
 package Essence_Resolver is
 
@@ -7,7 +7,7 @@ package Essence_Resolver is
    subtype Base_Address is Integer range 1 .. 14;
 
    --  System ceiling is 14**14, mirrored on the air (negative) side.
-   Ceiling : constant := 302_875_106_592_253;
+   Ceiling : constant Long_Long_Integer := 11_112_006_825_558_016;
 
    subtype Large_M is Long_Long_Integer range -Ceiling .. Ceiling;
 
@@ -15,9 +15,19 @@ package Essence_Resolver is
    subtype Square_M is Integer range 1 .. 196;
 
    --  Seven direct primes in the base: 1, 2, 3, 5, 7, 11, 13.
-   --  Unity counts as prime in this system; the six composites are
+   --  Unity counts as prime in this system; the seven composites are
    --  4, 6, 8, 9, 10, 12, 14.
    function Is_Prime (M : Base_Address) return Boolean;
+
+   --  Atom classification follows GEv2 address precedence: direct/prime-like
+   --  addresses, including Unity (1), are Prime_Atom; non-prime perfect
+   --  squares are Square_Atom; other composites are Composite_Atom.
+   type Atom_Kind is
+     (Prime_Atom,
+      Square_Atom,
+      Composite_Atom);
+
+   function Resolve_Atom (M : Base_Address) return Atom_Kind;
 
    --  Square-root pointer, for the 14 x 14 matrix.
    function Hydrogen (M : Square_M) return Base_Address;
@@ -25,18 +35,20 @@ package Essence_Resolver is
    --  Self-power pointer, for the M**M space up to 14**14.
    function Oxygen (M : Large_M) return Base_Address;
 
-   --  Irrational prime-root band: maps prime base addresses to Helium bands.
+   --  Direct/prime root-component band: maps prime base addresses to
+   --  Helium bands. Unity (1) is direct by GEv2 convention.
    function Helium (M : Base_Address) return Natural;
 
    --  Composite band: maps non-prime base addresses to Gas bands.
-   --  Helium and Gas partition Base_Address exactly -- every address is
+   --  Helium and Gas partition Base_Address exactly: every address is
    --  prime (Helium's domain) XOR composite (Gas's domain), never both,
    --  never neither. {4,6,8} -> 1, {9,10} -> 2, {12,14} -> 3.
    function Gas (M : Base_Address) return Natural;
 
    --  Resolves any M back to base, regardless of which matrix it came from.
    function Water (M : Large_M) return Base_Address;
-   -- For imaginary number boundry 
+
+   --  For imaginary number boundary.
    function I_Cycle (Power : Integer) return Integer;
 
    --  Address lookup: always non-negative, on both sides of the origin.
@@ -47,6 +59,4 @@ package Essence_Resolver is
 
    function Hydrogen_Resolve (M : Integer) return Integer;
 
-   
 end Essence_Resolver;
-
